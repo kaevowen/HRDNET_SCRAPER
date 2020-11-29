@@ -1,0 +1,6 @@
+authKey.key
+*.log
+
+/result
+/.idea
+/__pycache__
