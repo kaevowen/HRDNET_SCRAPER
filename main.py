@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox
-from PyQt5.QtCore import Qt, QThread, QDate, pyqtSignal
+from PyQt5.QtCore import Qt, QThread, QDate, pyqtSignal, pyqtSlot
 from PyQt5 import uic
 from datetime import datetime, timedelta
 import sys
@@ -39,6 +39,7 @@ class LoginWindow(QMainWindow, login_class):
 
 
 class MainWindow(QMainWindow, main_class):
+    #
     def __init__(self, session):
         super(MainWindow, self).__init__()
         self.setupUi(self)
@@ -50,6 +51,8 @@ class MainWindow(QMainWindow, main_class):
         self.radioValue = 60
         self.startDate.setDate(QDate.currentDate())
         self.endDate.setDate(QDate.currentDate().addDays(7))
+        self.Worker = object()
+        self.cancelBtn.setEnabled(False)
 
         for key in self.area_json.keys():
             self.upperAreaCd.addItem(key)
@@ -68,6 +71,7 @@ class MainWindow(QMainWindow, main_class):
         self.optD.clicked.connect(self.radioSelected)
 
         self.execBtn.clicked.connect(self.ExecuteScript)
+        self.cancelBtn.clicked.connect(self.DestroyScript)
 
     def radioSelected(self):
         if self.optA.isChecked() : self.radioValue = 60
@@ -80,7 +84,6 @@ class MainWindow(QMainWindow, main_class):
         txt = self.upperAreaCd.currentText()
         self.areaCd.clear()
         self.areaCd.addItems([key for key in self.area_json[txt]])
-
 
     def upperNcsCdChanged(self):
         upperTxt = self.upperNcsCd.currentText()
@@ -106,7 +109,6 @@ class MainWindow(QMainWindow, main_class):
             if middleTxt == '전체':
                 self.smallNcsCd.setEnabled(False)
                 self.NcsCode[1] = None
-                print(self.NcsCode)
 
             else:
                 self.smallNcsCd.setEnabled(True)
@@ -133,7 +135,7 @@ class MainWindow(QMainWindow, main_class):
 
     def ExecuteScript(self):
         keyword = None if self.lineEdit_2.text() == '' else self.lineEdit_2.text()
-        hrdnet = HrdNetAPI.HrdNetAPI(
+        self.Worker = Worker(
             self.session,
             self.startDate.date().toString('yyyyMMdd'),
             self.endDate.date().toString('yyyyMMdd'),
@@ -141,6 +143,36 @@ class MainWindow(QMainWindow, main_class):
             self.NcsCode,
             keyword=keyword
         )
+        self.Worker.start()
+        self.execBtn.setEnabled(False)
+        self.cancelBtn.setEnabled(True)
+
+    def DestroyScript(self):
+        print("Cancel sequence...")
+        self.Worker.terminate()
+        self.execBtn.setEnabled(True)
+        self.cancelBtn.setEnabled(False)
+
+class Worker(QThread):
+    def __init__(self, session, startDate, endDate, radioValue, NcsCode, keyword, parent=None):
+        QThread.__init__(self, parent)
+        self.session = session
+        self.startDate = startDate
+        self.endDate = endDate
+        self.radioValue = radioValue
+        self.NcsCode = NcsCode
+        self.keyword = keyword
+
+    def run(self):
+        hrdnet = HrdNetAPI.HrdNetAPI(
+            self.session,
+            self.startDate,
+            self.endDate,
+            self.radioValue,
+            self.NcsCode,
+            keyword=self.keyword
+        )
+        hrdnet.getPagination()
         hrdnet.getAPI()
 
 if __name__ == '__main__':

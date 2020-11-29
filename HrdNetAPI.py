@@ -53,8 +53,6 @@ def getExcel(session, title, subtitle, tracseId):
         with open(f'{FILE_DIR}', 'wb') as f:
             f.write(t.content)
 
-        print("Complete! Filename: ", title)
-
         wb = openpyxl.load_workbook(FILE_DIR)
         ws = wb[wb.sheetnames[0]]
         set_template(ws, subtitle)
@@ -62,9 +60,6 @@ def getExcel(session, title, subtitle, tracseId):
         wb[wb.sheetnames[1]].delete_cols(12)
         wb.save(os.path.join(DL_DIR, f'{title}_{subtitle}.xlsx'))
         os.remove(FILE_DIR)
-
-    else:
-        print("No have ExcelDownloadLink! name : ", title)
 
 
 def set_template(ws, acaName):
@@ -124,21 +119,24 @@ def checkLogin(ID, PW):
 
 class HrdNetAPI:
     def __init__(self, session, startDate, endDate, flag, NcsCode, keyword=None):
-        self.authKey = ''
+        with open('authKey.key') as f:
+            self.authKey = f.readline()
+
         self.startDate = startDate
         self.endDate = endDate
         self.flag = flag
         self.keyword = keyword
         self.NcsCode = NcsCode
-        self.url = ''
         self.pagination = 0
+        self.cnt = 0
+        self.ContentCnt = 0
         self.session = session
+        self.url = f'http://www.hrd.go.kr/jsp/HRDP/HRDPO00/HRDPOA{self.flag}/HRDPOA{self.flag}_1.jsp?'
+        self.payload = ''
+        self.urlWithPayload = ''
 
-    def getAPI(self):
-        self.url = 'http://www.hrd.go.kr/' \
-              f'jsp/HRDP/HRDPO00/HRDPOA{self.flag}/HRDPOA{self.flag}_1.jsp?' \
-
-        payload = f'returnType=XML&' \
+    def getPagination(self):
+        self.payload = f'returnType=XML&' \
                   f'authKey={self.authKey}&' \
                   f'pageNum=1&' \
                   f'pageSize=100&' \
@@ -150,29 +148,36 @@ class HrdNetAPI:
 
         if self.keyword is not None:
             k = quote(self.keyword)
-            payload += f'srchTraProcessNm={k}&' \
+            self.payload += f'srchTraProcessNm={k}&' \
 
         for i in range(len(self.NcsCode)):
             if self.NcsCode[i] is not None:
-                payload += f'srchKeco{i+1}={self.NcsCode[i]}&'
+                self.payload += f'srchKeco{i+1}={self.NcsCode[i]}&'
 
-        urlWithPayload = self.url + payload
-        res = get(urlWithPayload, headers=HEADERS)
+        self.urlWithPayload = self.url + self.payload
+        res = get(self.urlWithPayload, headers=HEADERS)
         tmp = BS(res.content, "lxml")
-        ContentCnt = int(tmp.find('scn_cnt').text)
-        self.pagination = (ContentCnt // 100) + 2
-        print(f'totalContent : {ContentCnt} page : {self.pagination-1}')
+        self.ContentCnt = int(tmp.find('scn_cnt').text)
+        self.pagination = (self.ContentCnt // 100) + 2
+        return self.ContentCnt
+
+    def getAPI(self):
+        print(f"total : {self.ContentCnt}")
 
         for i in range(1, self.pagination):
-            re.sub('pageSize=\\d{1,2}', f'pageSize={i}', urlWithPayload)
-            content = BS(get(urlWithPayload, headers=HEADERS).content, "lxml")
-            print(urlWithPayload)
+            tmp = re.sub('pageNum=\\d{1,2}', f'pageNum={i}', self.urlWithPayload)
+            content = BS(get(tmp, headers=HEADERS).content, "lxml")
+
+            print(tmp)
             try:
                 for element in content.find('srchList'):
                     tracseId = element.find("trprid").text
                     title = re.sub('[b\\/:*?"<>|]', "", element.find('title').text)
                     subtitle = re.sub('[b\\/:*?"<>|]', "", element.find('title').text)
                     getExcel(self.session, title, subtitle, tracseId)
+                    self.cnt += 1
+                    percentage = round((self.cnt / self.ContentCnt) * 100, 2)
+                    print(f"{percentage} %")
 
             except TypeError:
                 for element in content.find('srchlist'):
@@ -180,5 +185,6 @@ class HrdNetAPI:
                     subtitle = re.sub('[b\\/:*?"<>|]', "", element.find("subtitle").text)
                     title = re.sub('[b\\/:*?"<>|]', "", element.find("title").text)
                     getExcel(self.session, title, subtitle, tracseId)
-
-
+                    self.cnt += 1
+                    percentage = round((self.cnt / self.ContentCnt) * 100, 2)
+                    print(f"{percentage} %")
