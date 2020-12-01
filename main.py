@@ -26,7 +26,7 @@ class LoginWindow(QMainWindow, login_class):
         PW = self.PWbox.text()
         checkLogin = HrdNetAPI.checkLogin(ID, PW)
 
-        if checkLogin != False:
+        if checkLogin:
             self.MainWindow = MainWindow(checkLogin)
             self.MainWindow.show()
             self.hide()
@@ -37,9 +37,7 @@ class LoginWindow(QMainWindow, login_class):
             msg.exec_()
 
 
-
 class MainWindow(QMainWindow, main_class):
-    #
     def __init__(self, session):
         super(MainWindow, self).__init__()
         self.setupUi(self)
@@ -48,11 +46,11 @@ class MainWindow(QMainWindow, main_class):
         self.ncs_json = self.cb.get_ncs_json()
         self.session = session
         self.NcsCode = [None, None, None]
+        self.AreaCode = [None, None]
         self.radioValue = 60
         self.startDate.setDate(QDate.currentDate())
         self.endDate.setDate(QDate.currentDate().addDays(7))
-        self.Worker = object()
-        self.cancelBtn.setEnabled(False)
+        self.Worker = QThread()
 
         for key in self.area_json.keys():
             self.upperAreaCd.addItem(key)
@@ -61,6 +59,7 @@ class MainWindow(QMainWindow, main_class):
             self.upperNcsCd.addItem(key)
 
         self.upperAreaCd.currentTextChanged.connect(self.upperAreaCdChanged)
+        self.areaCd.currentTextChanged.connect(self.AreaCdChanged)
         self.upperNcsCd.currentTextChanged.connect(self.upperNcsCdChanged)
         self.middleNcsCd.currentTextChanged.connect(self.middleNcsCdChanged)
         self.smallNcsCd.currentTextChanged.connect(self.smallNcsCdChanged)
@@ -72,19 +71,47 @@ class MainWindow(QMainWindow, main_class):
 
         self.execBtn.clicked.connect(self.ExecuteScript)
         self.cancelBtn.clicked.connect(self.DestroyScript)
-        self.worker.finished.connect(self.toggleBtn)
 
     def radioSelected(self):
-        if self.optA.isChecked() : self.radioValue = 60
-        elif self.optB.isChecked(): self.radioValue = 61
-        elif self.optC.isChecked(): self.radioValue = 62
-        elif self.optD.isChecked(): self.radioValue = 64
+        if self.optA.isChecked():
+            self.radioValue = 60
+        elif self.optB.isChecked():
+            self.radioValue = 61
+        elif self.optC.isChecked():
+            self.radioValue = 62
+        elif self.optD.isChecked():
+            self.radioValue = 64
         # print(self.radioValue)
 
     def upperAreaCdChanged(self):
-        txt = self.upperAreaCd.currentText()
+        uppertxt = self.upperAreaCd.currentText()
         self.areaCd.clear()
-        self.areaCd.addItems([key for key in self.area_json[txt]])
+        self.areaCd.addItems([key for key in self.area_json[uppertxt]])
+
+        try:
+            if uppertxt == '전체':
+                self.AreaCode = [None, None]
+                self.areaCd.setEnabled(False)
+
+            else:
+                self.AreaCode[0] = self.area_json[uppertxt]['전체']
+                self.areaCd.setEnabled(True)
+        except KeyError:
+            pass
+
+    def AreaCdChanged(self):
+        try:
+            uppertxt = self.upperAreaCd.currentText()
+            lowertxt = self.areaCd.currentText()
+
+            if lowertxt == '전체':
+                self.AreaCode[1] = None
+            else:
+                self.AreaCode[1] = self.area_json[uppertxt][lowertxt]
+
+            print(self.AreaCode)
+        except KeyError:
+            pass
 
     def upperNcsCdChanged(self):
         upperTxt = self.upperNcsCd.currentText()
@@ -94,13 +121,13 @@ class MainWindow(QMainWindow, main_class):
             self.smallNcsCd.setEnabled(False)
             self.NcsCode = [None, None, None]
             print(self.NcsCode)
-            
+
         else:
             self.middleNcsCd.setEnabled(True)
             self.smallNcsCd.setEnabled(True)
             self.middleNcsCd.addItem('전체')
             self.middleNcsCd.addItems([key for key in self.ncs_json[upperTxt]])
-            self.NcsCode[0] = re.findall('\d{2}', upperTxt)[0]
+            self.NcsCode[0] = re.findall('\\d{2}', upperTxt)[0]
 
     def middleNcsCdChanged(self):
         upperTxt = self.upperNcsCd.currentText()
@@ -142,30 +169,25 @@ class MainWindow(QMainWindow, main_class):
             self.endDate.date().toString('yyyyMMdd'),
             self.radioValue,
             self.NcsCode,
+            self.AreaCode,
             keyword=keyword
         )
         self.Worker.start()
-        self.execBtn.setEnabled(False)
-        self.cancelBtn.setEnabled(True)
 
     def DestroyScript(self):
         print("cancel...")
         self.Worker.terminate()
-        self.execBtn.setEnabled(True)
-        self.cancelBtn.setEnabled(False)
 
-    def toggleBtn(self):
-        self.execBtn.setEnabled(True)
-        self.cancelBtn.setEnabled(False)
 
 class Worker(QThread):
-    def __init__(self, session, startDate, endDate, radioValue, NcsCode, keyword, parent=None):
+    def __init__(self, session, startDate, endDate, radioValue, NcsCode, AreaCode, keyword, parent=None):
         QThread.__init__(self, parent)
         self.session = session
         self.startDate = startDate
         self.endDate = endDate
         self.radioValue = radioValue
         self.NcsCode = NcsCode
+        self.AreaCode = AreaCode
         self.keyword = keyword
 
     def run(self):
@@ -175,14 +197,16 @@ class Worker(QThread):
             self.endDate,
             self.radioValue,
             self.NcsCode,
+            self.AreaCode,
             keyword=self.keyword
         )
         hrdnet.getPagination()
         hrdnet.getAPI()
-        self.finished.emit()
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     LW = LoginWindow()
+    # LW = MainWindow()
     LW.show()
     app.exec_()

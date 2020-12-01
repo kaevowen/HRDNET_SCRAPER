@@ -38,37 +38,10 @@
       <x>10</x>
       <y>3</y>
       <width>501</width>
-      <height>221</height>
+      <height>251</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_2">
-     <item row="2" column="0">
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QLabel" name="label">
-         <property name="maximumSize">
-          <size>
-           <width>50</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>훈련기관</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="lineEdit">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
      <item row="5" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout_4">
        <item>
@@ -147,10 +120,10 @@
        </item>
       </layout>
      </item>
-     <item row="3" column="0">
-      <layout class="QHBoxLayout" name="horizontalLayout">
+     <item row="2" column="0">
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QLabel" name="label_7">
+        <widget class="QLabel" name="label">
          <property name="maximumSize">
           <size>
            <width>50</width>
@@ -158,7 +131,7 @@
           </size>
          </property>
          <property name="text">
-          <string>NCS직무</string>
+          <string>훈련기관</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -166,47 +139,27 @@
         </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="upperNcsCd">
-         <property name="maximumSize">
-          <size>
-           <width>120</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <item>
-          <property name="text">
-           <string>전체</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="middleNcsCd">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>150</width>
-           <height>16777215</height>
-          </size>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="smallNcsCd">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>150</width>
-           <height>16777215</height>
-          </size>
+        <widget class="QLineEdit" name="lineEdit">
+         <property name="text">
+          <string/>
          </property>
         </widget>
        </item>
       </layout>
+     </item>
+     <item row="7" column="0">
+      <widget class="QPushButton" name="cancelBtn">
+       <property name="text">
+        <string>취소</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QPushButton" name="execBtn">
+       <property name="text">
+        <string>다운로드</string>
+       </property>
+      </widget>
      </item>
      <item row="1" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -230,13 +183,6 @@
         <widget class="QLineEdit" name="lineEdit_2"/>
        </item>
       </layout>
-     </item>
-     <item row="6" column="0">
-      <widget class="QPushButton" name="execBtn">
-       <property name="text">
-        <string>다운로드</string>
-       </property>
-      </widget>
      </item>
      <item row="4" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout_5">
@@ -303,20 +249,68 @@
        </item>
       </layout>
      </item>
+     <item row="3" column="0">
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QLabel" name="label_7">
+         <property name="maximumSize">
+          <size>
+           <width>50</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>NCS직무</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="upperNcsCd">
+         <property name="maximumSize">
+          <size>
+           <width>120</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <item>
+          <property name="text">
+           <string>전체</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="middleNcsCd">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>150</width>
+           <height>16777215</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="smallNcsCd">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>150</width>
+           <height>16777215</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
     </layout>
-   </widget>
-   <widget class="QPushButton" name="cancelBtn">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>230</y>
-      <width>499</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>취소</string>
-    </property>
    </widget>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>

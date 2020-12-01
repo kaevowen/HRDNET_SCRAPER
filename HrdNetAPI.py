@@ -118,7 +118,7 @@ def checkLogin(ID, PW):
 
 
 class HrdNetAPI:
-    def __init__(self, session, startDate, endDate, flag, NcsCode, keyword=None, keyword2=None):
+    def __init__(self, session, startDate, endDate, flag, NcsCode, AreaCode, keyword=None, keyword2=None):
         with open('authKey.key') as f:
             self.authKey = f.readline()
 
@@ -128,6 +128,7 @@ class HrdNetAPI:
         self.keyword = keyword
         self.keyword2 = keyword2
         self.NcsCode = NcsCode
+        self.AreaCode = AreaCode
         self.pagination = 0
         self.cnt = 0
         self.ContentCnt = 0
@@ -158,6 +159,10 @@ class HrdNetAPI:
         for i in range(len(self.NcsCode)):
             if self.NcsCode[i] is not None:
                 self.payload += f'srchKeco{i+1}={self.NcsCode[i]}&'
+
+        for i in range(len(self.AreaCode)):
+            if self.AreaCode[i] is not None:
+                self.payload += f'srchTraArea{i + 1}={self.AreaCode[i]}&'
 
         self.urlWithPayload = self.url + self.payload
         res = get(self.urlWithPayload, headers=HEADERS)
