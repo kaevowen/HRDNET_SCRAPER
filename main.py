@@ -72,13 +72,14 @@ class MainWindow(QMainWindow, main_class):
 
         self.execBtn.clicked.connect(self.ExecuteScript)
         self.cancelBtn.clicked.connect(self.DestroyScript)
+        self.worker.finished.connect(self.toggleBtn)
 
     def radioSelected(self):
         if self.optA.isChecked() : self.radioValue = 60
         elif self.optB.isChecked(): self.radioValue = 61
         elif self.optC.isChecked(): self.radioValue = 62
         elif self.optD.isChecked(): self.radioValue = 64
-        print(self.radioValue)
+        # print(self.radioValue)
 
     def upperAreaCdChanged(self):
         txt = self.upperAreaCd.currentText()
@@ -148,8 +149,12 @@ class MainWindow(QMainWindow, main_class):
         self.cancelBtn.setEnabled(True)
 
     def DestroyScript(self):
-        print("Cancel sequence...")
+        print("cancel...")
         self.Worker.terminate()
+        self.execBtn.setEnabled(True)
+        self.cancelBtn.setEnabled(False)
+
+    def toggleBtn(self):
         self.execBtn.setEnabled(True)
         self.cancelBtn.setEnabled(False)
 
@@ -174,6 +179,7 @@ class Worker(QThread):
         )
         hrdnet.getPagination()
         hrdnet.getAPI()
+        self.finished.emit()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

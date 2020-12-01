@@ -35,7 +35,7 @@ class getCB_Value:
                 _area[i.text] = dict()
                 i.click()
                 sleep(0.05)
-                dr.switch_to.window(self.dr.window_handles[0])
+                dr.switch_to.window(dr.window_handles[0])
                 for j in dr.find_elements_by_xpath('//*[@id="areaUl2"]/li'):
                     _area2[j.text] = j.get_attribute('data-code')
                     print(f'{i.text} {j.text}')
