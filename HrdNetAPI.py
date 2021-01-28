@@ -10,6 +10,7 @@ from openpyxl.styles import PatternFill, Alignment, Side, Border
 from requests import get, Session
 from bs4 import BeautifulSoup as BS
 
+RE_COMP = re.compile('[b\\/:*?"<>|\\t]')
 EXCEL_BASE_URL = "http://www.hrd.go.kr/hrdp/ps/ppsmo/excelDownAll0109P.do?"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DL_DIR = os.path.join(BASE_DIR, "result")
@@ -34,17 +35,7 @@ if not os.path.isdir(DL_DIR):
 
 
 def getExcel(session, title, subtitle, tracseId):
-    args = f"tracseId={tracseId}&" \
-           "ncsYn=Y&" \
-           f"pssrpYear={datetime.now().year}&" \
-           "pssrpTme=9&" \
-           "mainTracseSe=&" \
-           "ncsAbluitFactorUnitSe=&" \
-           "tracseSttusCd=&" \
-           "jdgmnSe=&" \
-           "excelAllYn=&" \
-           "excelGbn=&" \
-           "A2Gbn="
+    args = f"tracseId={tracseId}&ncsYn=Y&pssrpYear={datetime.now().year}&pssrpTme=9&mainTracseSe=&ncsAbluitFactorUnitSe=&tracseSttusCd=&jdgmnSe=&excelAllYn=&excelGbn=&A2Gbn="
 
     t = session.get(EXCEL_BASE_URL + args)
     if t.headers.get('content-type') == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
@@ -179,22 +170,13 @@ class HrdNetAPI:
             content = BS(get(tmp, headers=HEADERS).content, "lxml")
 
             print(tmp)
-            try:
-                for element in content.find('srchList'):
-                    tracseId = element.find("trprid").text
-                    title = re.sub('[b\\/:*?"<>|]', "", element.find('title').text)
-                    subtitle = re.sub('[b\\/:*?"<>|]', "", element.find('title').text)
-                    getExcel(self.session, title, subtitle, tracseId)
-                    self.cnt += 1
-                    percentage = round((self.cnt / self.ContentCnt) * 100, 2)
-                    print(f"{percentage} %")
 
-            except TypeError:
-                for element in content.find('srchlist'):
-                    tracseId = element.find("trprid").text
-                    subtitle = re.sub('[b\\/:*?"<>|]', "", element.find("subtitle").text)
-                    title = re.sub('[b\\/:*?"<>|]', "", element.find("title").text)
+            for e in content.select('scn_list'):
+                    tracseId = e.select("trprid")[0].text
+                    title = re.sub(RE_COMP, "", e.select('title')[0].text)
+                    subtitle = re.sub(RE_COMP, "", e.select('subtitle')[0].text)
                     getExcel(self.session, title, subtitle, tracseId)
                     self.cnt += 1
                     percentage = round((self.cnt / self.ContentCnt) * 100, 2)
                     print(f"{percentage} %")
+                    
