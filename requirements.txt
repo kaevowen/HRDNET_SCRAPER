@@ -1,6 +1,7 @@
-setuptools==53.0.0
 beautifulsoup4==4.9.3
 openpyxl==3.0.6
 PyQt5==5.15.2
 PyQt5-sip==12.8.1
 requests==2.25.1
+selenium==3.141.0
+lxml==4.6.2

@@ -179,3 +179,5 @@ class HrdNetAPI:
                     self.cnt += 1
                     percentage = round((self.cnt / self.ContentCnt) * 100, 2)
                     print(f"{percentage} %")
+
+        os.startfile(DL_DIR)
