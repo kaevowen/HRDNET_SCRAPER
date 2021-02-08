@@ -103,11 +103,44 @@ def checkLogin(ID, PW):
 
     res = json.loads(res.text)
     if res['message'] == 'checkLoginId' or res['message'] == 'FAIL':
-        return False
+        return "Fail_Login"
 
-    return s
+    if not checkAuthKey(s):
+        return "Fail_Authkey"
+    
+    return "Success"
 
 
+def checkAuthKey(s):
+    ak = os.path.join(BASE_DIR, "authKey.key")
+    
+    if not os.path.isfile(ak):
+        h = {
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7,ja;q=0.6',
+            'Connection': 'keep-alive',
+            'Cookie': 'WMONID=sY_dRJFIDLl; JSESSIONID=nY2JggPZNpl2f52Lv5K31Dcy0bQcMCbTRtp6PH6C5FNXmvvTvQ21!673857750!-761163285; PCID=16127466537135153594340; RC_RESOLUTION=1600*900; RC_COLOR=24; openpop5=; UID=kaev6',
+            'DNT': '1',
+            'Host': 'www.hrd.go.kr',
+            'Referer': 'https://www.hrd.go.kr/hrdp/ps/ppsho/PPSHO0100L.do',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'same-origin',
+            'Sec-Fetch-User': '?1',
+            'Upgrade-Insecure-Requests': '1',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36'
+        }
+        res = BS(s.get('https://www.hrd.go.kr/hrdp/ps/ppsho/PPSHO0100L.do').content, "html.parser")
+        try:
+            key = re.sub('\s', '', res.select('table.view > tbody > tr > td')[-1].text)
+            
+            with open(ak, "w+") as f:
+                f.write(key)
+                
+        except IndexError:
+            return False
+    
 class HrdNetAPI:
     def __init__(self, session, startDate, endDate, flag, NcsCode, AreaCode, keyword=None, keyword2=None):
         with open('authKey.key') as f:
