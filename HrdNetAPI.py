@@ -149,11 +149,11 @@ class HrdNetAPI:
 
         for i in range(len(self.NcsCode)):
             if self.NcsCode[i] is not None:
-                self.payload += f'srchKeco{i+1}={self.NcsCode[i]}&'
+                self.payload += f'srchKeco{ i + 1 }={self.NcsCode[i]}&'
 
         for i in range(len(self.AreaCode)):
             if self.AreaCode[i] is not None:
-                self.payload += f'srchTraArea{i + 1}={self.AreaCode[i]}&'
+                self.payload += f'srchTraArea{ i + 1 }={self.AreaCode[i]}&'
 
         self.urlWithPayload = self.url + self.payload
         res = get(self.urlWithPayload, headers=HEADERS)
@@ -179,4 +179,3 @@ class HrdNetAPI:
                     self.cnt += 1
                     percentage = round((self.cnt / self.ContentCnt) * 100, 2)
                     print(f"{percentage} %")
-                    

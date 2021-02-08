@@ -6,3 +6,4 @@ authKey.key
 /__pycache__
 /build
 /dist
+/venv
