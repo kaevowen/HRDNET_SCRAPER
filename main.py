@@ -25,17 +25,22 @@ class LoginWindow(QMainWindow, login_class):
         ID = self.IDbox.text()
         PW = self.PWbox.text()
         checkLogin = HrdNetAPI.checkLogin(ID, PW)
-
-        if checkLogin:
-            self.MainWindow = MainWindow(checkLogin)
-            self.MainWindow.show()
-            self.hide()
-        else:
+        if checkLogin == "Fail_Login":
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Critical)
             msg.setText("아이디 또는 패스워드가 맞지 않습니다!")
             msg.exec_()
 
+        if checkLogin == "Fail_Authkey":
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("api키를 불러올 수 없습니다. 마이 페이지에서 발급받아주세요.")
+            msg.exec_()
+            
+        else:
+            self.MainWindow = MainWindow(checkLogin)
+            self.MainWindow.show()
+            self.hide()
 
 class MainWindow(QMainWindow, main_class):
     def __init__(self, session):

@@ -34,10 +34,10 @@ if not os.path.isdir(DL_DIR):
     os.mkdir(DL_DIR)
 
 
-def getExcel(session, title, subtitle, tracseId):
+def getExcel(sess, title, subtitle, tracseId):
     args = f"tracseId={tracseId}&ncsYn=Y&pssrpYear={datetime.now().year}&pssrpTme=9&mainTracseSe=&ncsAbluitFactorUnitSe=&tracseSttusCd=&jdgmnSe=&excelAllYn=&excelGbn=&A2Gbn="
 
-    t = session.get(EXCEL_BASE_URL + args)
+    t = sess.get(EXCEL_BASE_URL + args)
     if t.headers.get('content-type') == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
         print("Downloading... ", end=' ')
         FILE_DIR = os.path.join(DL_DIR, f"{title}.xlsx")
@@ -105,15 +105,15 @@ def checkLogin(ID, PW):
     if res['message'] == 'checkLoginId' or res['message'] == 'FAIL':
         return "Fail_Login"
 
+
     if not checkAuthKey(s):
         return "Fail_Authkey"
     
-    return "Success"
+    return s
 
 
 def checkAuthKey(s):
     ak = os.path.join(BASE_DIR, "authKey.key")
-    
     if not os.path.isfile(ak):
         h = {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
@@ -140,9 +140,11 @@ def checkAuthKey(s):
                 
         except IndexError:
             return False
+        
+    return True
     
 class HrdNetAPI:
-    def __init__(self, session, startDate, endDate, flag, NcsCode, AreaCode, keyword=None, keyword2=None):
+    def __init__(self, sess, startDate, endDate, flag, NcsCode, AreaCode, keyword=None, keyword2=None):
         with open('authKey.key') as f:
             self.authKey = f.readline()
 
@@ -156,7 +158,7 @@ class HrdNetAPI:
         self.pagination = 0
         self.cnt = 0
         self.ContentCnt = 0
-        self.session = session
+        self.session = sess
         self.url = f'http://www.hrd.go.kr/jsp/HRDP/HRDPO00/HRDPOA{self.flag}/HRDPOA{self.flag}_1.jsp?'
         self.payload = ''
         self.urlWithPayload = ''
